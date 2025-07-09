@@ -13,7 +13,7 @@ gemini_client = genai.GenerativeModel("gemini-2.0-flash")
 
 def query_gemini(query: str, history: list, max_retries: int = 3) -> str:
     """Query Gemini API with retry logic for network errors"""
-    prompt = f"You are CodeGenie, an AI assistant designed to help with coding tasks. Given the following user query, generate a response that fulfills the request. Use {history} to understand the context better don't give json like responses..\n\nQuery: \"{query}\"\nResponse:"
+    prompt = f"You are CodeGenie, an AI assistant designed to help with coding tasks. Given the following user query, generate a response that fulfills only coding related requests. Use {history} to understand the context better don't give json like responses..\n\nQuery: \"{query}\"\nResponse:"
     
     for attempt in range(max_retries):
         try:
