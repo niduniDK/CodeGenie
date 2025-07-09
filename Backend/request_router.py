@@ -14,13 +14,13 @@ class ChatRequest(BaseModel):
 def get_help(msg: ChatRequest):
     query = msg.query
     history = msg.history
-    intent = classify_intent(query)
+    intent = classify_intent(query,history)
     if intent == 'code_generation':
-        response = generate_code(query)
+        response = generate_code(query,history)
     elif intent == 'identifying_bugs':
-        response = identify_bugs(query)
+        response = identify_bugs(query,history)
     elif intent == 'code_review':
-        response = review_code(query)
+        response = review_code(query,history)
     else:
-        response = query_gemini(query)
+        response = query_gemini(query,history)
     return response

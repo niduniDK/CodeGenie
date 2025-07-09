@@ -1,59 +1,42 @@
 import { useEffect, useState, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import attach from './assets/attach.png';
-import send from './assets/send.png';
 import { useLocation, useNavigate } from 'react-router-dom';
-import NavBar from './navbar';
+import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github.css'; // Import highlight.js styles
+import 'highlight.js/styles/github.css';
+import NavBar from './navbar';
+import attach from './assets/attach.png';
+import send from './assets/send.png';
 
 function Chat() {
-    const tempMsg = "Hello, I'm currently experiencing some issues. Please try again later.";
     const location = useLocation();
-    const [typedMsg, setTypedMsg] = useState(location.state?.userMsg || "");
-    const [messages, setMessages] = useState([]);
+    const initialMessages = location.state?.messages || [];
+    const chatId = location.state?.id || 0;
+    const storageKey = `chat-${chatId}`;
     const navigate = useNavigate();
-    const messagesEndRef = useRef(null);
+
+    const [typedMsg, setTypedMsg] = useState(location.state?.userMsg || "");
+    const [messages, setMessages] = useState(initialMessages);
     const [loading, setLoading] = useState(false);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        const stored = JSON.parse(localStorage.getItem(storageKey)) || [];
+        setMessages(stored);
+    }, [chatId]);
+
+    useEffect(() => {
+        localStorage.setItem(storageKey, JSON.stringify(messages));
+    }, [messages, storageKey]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
-
-    useEffect(() => {
-        const storedMsgs = localStorage.getItem("messages");
-        if (storedMsgs) {
-            setMessages(JSON.parse(storedMsgs));
-        }
-    }, []);
-
-    useEffect(() => {
-        localStorage.setItem("messages", JSON.stringify(messages));
-    }, [messages]);
-
-    const formatCode = (input) => {
-        const trimmedInput = input.trim(); 
-
-        if (trimmedInput.includes("function") || 
-            trimmedInput.includes("def") || 
-            trimmedInput.includes("{") || 
-            trimmedInput.includes("=>")) {
-            return `\`\`\`js\n${trimmedInput}\n\`\`\``;
-        }
-
-        return trimmedInput;
-    };
-
-
 
     const MsgBox = ({ msg, isBot }) => (
-        <div className={`flex ${isBot ? "justify-start" : "justify-end"}`}>
-            <p className={`text-black rounded-xl p-5 mx-8 my-3 ${isBot ? "text-left bg-purple-300" : "bg-purple-50"}`}>
-                <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
-                >
+        <div className={`flex ${isBot ? 'justify-start' : 'justify-end'}`}>
+            <p className={`text-black rounded-xl p-5 mx-8 my-3 ${isBot ? 'bg-purple-300' : 'bg-purple-50'}`}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                     {msg}
                 </ReactMarkdown>
             </p>
@@ -61,12 +44,12 @@ function Chat() {
     );
 
     const handleChat = async () => {
-        const formattedMsg = formatCode(typedMsg);
-        if (formattedMsg === "") return;
+        const trimmedMsg = typedMsg.trim();
+        if (trimmedMsg === "") return;
 
-        const newUserMessage = { text: formattedMsg, isBot: false };
-        setMessages(prev => [...prev, newUserMessage]);
-        setTypedMsg("");  
+        const userMessage = { text: trimmedMsg, isBot: false };
+        setMessages(prev => [...prev, userMessage]);
+        setTypedMsg("");
         setLoading(true);
 
         try {
@@ -74,79 +57,57 @@ function Chat() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    query: formattedMsg,
-                    history: [...messages, newUserMessage]
+                    query: trimmedMsg,
+                    history: [...messages, userMessage]
                 })
             });
 
-            if (!response.ok) {
-                throw new Error("Network response was not ok: " + response.statusText);
-            }
-
             const data = await response.json();
+
             setTimeout(() => {
                 setMessages(prev => [...prev, { text: data, isBot: true }]);
-                setLoading(false); 
+                setLoading(false);
             }, 500);
-
-        } catch (error) {
-            console.error("Error during chat:", error); 
-            setTimeout(() => {
-                setMessages(prev => [...prev, { text: tempMsg, isBot: true }]);
-                setLoading(false); 
-            }, 500);
+        } catch (err) {
+            setMessages(prev => [...prev, { text: "Oops, something went wrong.", isBot: true }]);
+            setLoading(false);
         }
     };
 
     const handleInputKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             handleChat();
         }
-    };
-
-    const handleSendClick = () => {
-        handleChat();
-    };
-
-    const handleAttachClick = () => {
-        navigate('/');
     };
 
     return (
         <div className='bg-gradient-to-r from-purple-400 to-pink-300'>
             <NavBar />
-            <div className='min-h-screen bg-gradient-to-r from-purple-400 to-pink-300'>
-                <div className="flex flex-col bg-gradient-to-r from-purple-400 to-pink-300">
-                    <div className="flex-1 overflow-y-auto p-5">
-                        {messages.map((msg, index) => (
-                            <MsgBox key={index} msg={msg.text} isBot={msg.isBot} />
+            <div className='min-h-screen'>
+                <div className='flex flex-col'>
+                    <div className='flex-1 overflow-y-auto m-5 p-5'>
+                        {messages.map((msg, i) => (
+                            <MsgBox key={i} msg={msg.text} isBot={msg.isBot} />
                         ))}
-                        {loading && <MsgBox msg="Thinking..." isBot={true} />}
+                        {loading && <MsgBox msg="Thinking..." isBot />}
                         <div ref={messagesEndRef} />
                     </div>
-                    <div className="flex flex-row bg-gradient-to-r from-purple-400 to-pink-300 items-center justify-center w-full h-auto p-3">
-                        <img
-                            src={attach}
-                            alt="Attach"
-                            className="w-10 h-auto cursor-pointer"
-                            onClick={handleAttachClick}
-                        />
+                    <div className='flex flex-row items-center justify-center p-3'>
+                        <img src={attach} className="w-10 cursor-pointer" onClick={() => navigate('/')} />
                         <textarea
-                            id="user_msg"
-                            className="bg-purple-100 text-black border-purple-950 border-2 p-3 rounded-2xl w-2/3 m-3"
+                            className="bg-purple-100 border-2 border-purple-950 p-3 rounded-2xl w-2/3 m-3"
                             value={typedMsg}
                             onChange={e => setTypedMsg(e.target.value)}
                             onKeyDown={handleInputKeyDown}
                             placeholder="Type your message..."
                             disabled={loading}
                         />
-
                         <img
                             src={send}
-                            alt="Send"
-                            className="w-10 h-auto cursor-pointer"
-                            onClick={handleSendClick}
-                            style={{ opacity: loading ? 0.5 : 1, cursor: loading ? 'default' : 'pointer' }} 
+                            className="w-10 cursor-pointer"
+                            onClick={handleChat}
+                            style={{ opacity: loading ? 0.5 : 1 }}
                         />
                     </div>
                 </div>
