@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = "codellama-34b"
+GROQ_MODEL = "llama3-70b-8192"
 
 def query_groq(prompt: str) -> str:
     response = requests.post(
@@ -48,6 +48,7 @@ def classify_intent(query: str) -> str:
 def generate_code(query: str) -> str:
     prompt = f"""
     You are an expert code generator. Given the following user query, generate the code that fulfills the request.
+    Format the code with proper indentation and ensure it is syntactically correct.
     Query: "{query}"
     Code:
 """
