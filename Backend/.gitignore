@@ -44,3 +44,7 @@ static/
 
 # Ignore Jupyter notebook checkpoints (if used)
 .ipynb_checkpoints/
+
+Notes
+**.bin
+**.pickle
