@@ -20,6 +20,8 @@ function Chat() {
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef(null);
 
+    const isDSAGuide = localStorage.getItem("isDSAGuide");
+
     useEffect(() => {
         const stored = JSON.parse(localStorage.getItem(storageKey)) || [];
         setMessages(stored);
@@ -52,15 +54,29 @@ function Chat() {
         setTypedMsg("");
         setLoading(true);
 
+        let response;
+
         try {
-            const response = await fetch('http://localhost:8000/chat/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    query: trimmedMsg,
-                    history: [...messages, userMessage]
-                })
-            });
+            if (isDSAGuide) {
+                response = await fetch('http://localhost:8000/guide/dsa_guide', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ problem: trimmedMsg, history: [...messages, userMessage] })
+                });
+
+            }
+            else{
+                response = await fetch('http://localhost:8000/chat/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: trimmedMsg,
+                        history: [...messages, userMessage]
+                    })
+                });
+            }
+
+            
 
             const data = await response.json();
 
@@ -69,7 +85,7 @@ function Chat() {
                 setLoading(false);
             }, 500);
         } catch (err) {
-            setMessages(prev => [...prev, { text: "Oops, something went wrong.", isBot: true }]);
+            setMessages(prev => [...prev, { text: `Oops, something went wrong.${err}`, isBot: true }])
             setLoading(false);
         }
     };
@@ -82,7 +98,7 @@ function Chat() {
     };
 
     return (
-        <div className='bg-gradient-to-r from-purple-400 to-pink-300'>
+        <div className='bg-gradient-to-r from-black to-blue-950'>
             <NavBar />
             <div className='min-h-screen'>
                 <div className='flex flex-col'>

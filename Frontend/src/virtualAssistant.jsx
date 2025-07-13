@@ -76,13 +76,13 @@ function VirtualAssistant() {
     return (
         <div>
             <NavBar />
-            <div className="flex flex-row h-screen bg-gradient-to-r from-purple-400 to-pink-200">
-                <div className="w-64 bg-white/70 h-full shadow-lg flex flex-col">
+            <div className="flex flex-row h-screen bg-gradient-to-r from-black to-blue-950">
+                <div className="w-64 bg-blue-950/70 h-full shadow-lg flex flex-col">
                     <div className="flex items-center justify-between p-4 border-b">
-                        <h2 className="text-lg font-semibold">Old Chats</h2>
+                        <h2 className="text-lg text-white font-semibold">Old Chats</h2>
                         <img src={newImg} alt="New Chat" className="w-8 h-8 cursor-pointer" onClick={handleChat} />
                     </div>
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto bg-blue-950">
                         {history.length === 0 && (
                             <div className="m-3 text-gray-600">No chats yet.</div>
                         )}
@@ -101,7 +101,7 @@ function VirtualAssistant() {
                     </div>
                     
                 </div>
-                <h1 className="text-purple-950 text-5xl text-center font-bold lg:mx-10 lg:my-48">{displayChat}</h1>
+                <h1 className="text-white text-5xl text-center font-bold lg:mx-10 lg:my-48">{displayChat}</h1>
                     
             </div>
         </div>
