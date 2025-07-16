@@ -4,7 +4,7 @@ CodeGenie is an AI-powered virtual assistant that helps users to understand and 
 
 ## 🔮 Features
 
-- 🧞‍♂️ **DSA Guide** – A RAG system which supports users to understand DSA problems step by step (powered by Gemini api).
+- 🧞‍♂️ **DSA Guide** – A RAG system which supports users to understand DSA problems step by step (powered by Gemini api + vector databases).
 - 🧠 **AI-Powered Chat** – Integrates with a backend AI model (e.g., Gemini, GPT, etc.) for natural language interaction.
 - 💬 **Formatted Responses** – Supports Markdown with syntax-highlighted code blocks using `react-markdown` and `highlight.js`.
 - 💾 **Persistent Chat History** – Messages are saved per session using `localStorage`, with support for multiple conversations.
